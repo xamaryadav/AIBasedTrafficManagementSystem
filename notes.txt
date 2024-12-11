@@ -1,0 +1,148 @@
+Here's a detailed breakdown of how the signal system works:
+
+1. Signal Timing Structure:
+```python
+class TrafficSignal:
+    def __init__(self, red, yellow, green, minimum, maximum):
+        self.red = red          # Red light duration
+        self.yellow = yellow    # Yellow light duration (5 seconds default)
+        self.green = green      # Green light duration
+        self.minimum = minimum  # Minimum green time (10 seconds)
+        self.maximum = maximum  # Maximum green time (60 seconds)
+```
+
+2. Signal State Progression:
+```python
+signals = []  # Array of 4 traffic signals
+noOfSignals = 4
+currentGreen = 0   # Current active green signal (0-3)
+currentYellow = 0  # Yellow state flag
+nextGreen = (currentGreen + 1) % noOfSignals
+```
+
+3. Signal Timing Calculation:
+```python
+def initialize():
+    # First signal starts immediately (green)
+    ts1 = TrafficSignal(0, defaultYellow, defaultGreen, defaultMinimum, defaultMaximum)
+    
+    # Second signal starts after first signal's complete cycle
+    ts2 = TrafficSignal(ts1.red + ts1.yellow + ts1.green, 
+                      defaultYellow, defaultGreen, 
+                      defaultMinimum, defaultMaximum)
+    
+    # Other signals start on red
+    ts3 = TrafficSignal(defaultRed, defaultYellow, defaultGreen, 
+                      defaultMinimum, defaultMaximum)
+    ts4 = TrafficSignal(defaultRed, defaultYellow, defaultGreen, 
+                      defaultMinimum, defaultMaximum)
+```
+
+4. Signal Transition Logic:
+```python
+def repeat():
+    global currentGreen, currentYellow, nextGreen
+    
+    # Green phase
+    while signals[currentGreen].green > 0:
+        updateValues()
+        time.sleep(1)
+    
+    # Yellow phase
+    currentYellow = 1
+    while signals[currentGreen].yellow > 0:
+        updateValues()
+        time.sleep(1)
+    currentYellow = 0
+    
+    # Switch to next signal
+    currentGreen = nextGreen
+    nextGreen = (currentGreen + 1) % noOfSignals
+    
+    # Set next signal's red duration
+    signals[nextGreen].red = signals[currentGreen].yellow + signals[currentGreen].green
+```
+
+5. Timer Updates:
+```python
+def updateValues():
+    for i in range(noOfSignals):
+        if i == currentGreen:
+            if currentYellow == 0:
+                signals[i].green -= 1  # Countdown green
+            else:
+                signals[i].yellow -= 1 # Countdown yellow
+        else:
+            signals[i].red -= 1        # Countdown red
+```
+
+6. Vehicle Response to Signals:
+```python
+def move(self):
+    # Example for right direction
+    if self.direction == 'right':
+        can_move = (
+            self.crossed == 1 or                    # Already crossed signal
+            (currentGreen == 0 and                  # Signal is green
+             currentYellow == 0) or                 # Not yellow
+            self.x + self.width <= self.stop        # Haven't reached stop line
+        )
+        if can_move:
+            self.x += self.speed
+```
+
+7. Signal Display:
+```python
+# In main loop
+for i in range(noOfSignals):
+    if i == currentGreen:
+        if currentYellow:
+            screen.blit(yellowSignal, signalCoods[i])
+        else:
+            screen.blit(greenSignal, signalCoods[i])
+    else:
+        screen.blit(redSignal, signalCoods[i])
+```
+
+This creates a synchronized traffic management system where:
+- Each signal operates on a timer
+- Vehicles respond to signal states
+- System maintains proper traffic flow
+- Signals transition smoothly between states
+- Traffic flows in a cyclic pattern
+
+
+
+The traffic management system works through these key components:
+
+1. Traffic Signals:
+- 4 signals at intersection corners
+- Cycles through red, yellow, green states
+- Timer-based state changes
+- Each signal operates independently
+
+2. Vehicles:
+- Spawn randomly from 4 directions
+- 5 types: car, bus, truck, rickshaw, bike
+- Move based on signal states
+- Stop at red lights and maintain safe distances
+- Track crossing status
+
+3. Threading:
+- Main thread: Handles display/graphics
+- Initialization thread: Controls signal timing
+- Vehicle generation thread: Creates new vehicles
+
+4. Vehicle Movement:
+- Uses coordinate system (x,y)
+- Different speeds per vehicle type
+- Collision avoidance via gap maintenance
+- Stop line detection
+
+5. Display:
+- Updates at 60 FPS
+- Shows background intersection
+- Renders vehicles and signals
+- Updates vehicle positions
+
+Need more details about any component?
